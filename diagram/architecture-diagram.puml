@@ -1,0 +1,112 @@
+@startuml Microservices Architecture
+
+!define RECTANGLE class
+
+title Microservices Architecture Diagram
+
+package "Client Layer" {
+  [Web Client] as Client
+  [Mobile App] as Mobile
+  [Postman] as Postman
+}
+
+package "API Gateway" {
+  [API Gateway :8080] as Gateway
+}
+
+package "Microservices" {
+  package "Auth Service :3001" {
+    [Auth Controller] as AuthCtrl
+    [Auth Service] as AuthSvc
+    [Auth Repository] as AuthRepo
+    [Auth Model] as AuthModel
+  }
+
+  package "User Service :3002" {
+    [User Controller] as UserCtrl
+    [User Service] as UserSvc
+    [User Repository] as UserRepo
+    [User Model] as UserModel
+  }
+
+  package "Order Service :3003" {
+    [Order Controller] as OrderCtrl
+    [Order Service] as OrderSvc
+    [Order Repository] as OrderRepo
+    [Order Model] as OrderModel
+  }
+
+  package "Payment Service :3004" {
+    [Payment Controller] as PaymentCtrl
+    [Payment Service] as PaymentSvc
+    [Payment Repository] as PaymentRepo
+    [Payment Model] as PaymentModel
+    [Gateway Service] as GatewaySvc
+  }
+}
+
+package "Database" {
+  database "PostgreSQL :5432" as DB {
+    [auth_users] as AuthTable
+    [users] as UserTable
+    [orders] as OrderTable
+    [payments] as PaymentTable
+  }
+}
+
+' Client connections
+Client --> Gateway : "HTTP Requests"
+Mobile --> Gateway : "HTTP Requests"
+Postman --> Gateway : "API Testing"
+
+' Gateway routing
+Gateway --> AuthCtrl : "/api/register, /api/login"
+Gateway --> UserCtrl : "/api/users/*"
+Gateway --> OrderCtrl : "/api/orders/*"
+Gateway --> PaymentCtrl : "/api/payments/*"
+
+' Internal Gateway routing for Payment Service
+Gateway --> UserCtrl : "/internal/users/*"
+Gateway --> OrderCtrl : "/internal/orders/*"
+
+' Payment Service internal calls
+PaymentSvc --> GatewaySvc : "Validate User/Order"
+GatewaySvc --> Gateway : "Internal API calls"
+
+' Service layer connections
+AuthCtrl --> AuthSvc
+AuthSvc --> AuthRepo
+AuthRepo --> AuthModel
+
+UserCtrl --> UserSvc
+UserSvc --> UserRepo
+UserRepo --> UserModel
+
+OrderCtrl --> OrderSvc
+OrderSvc --> OrderRepo
+OrderRepo --> OrderModel
+
+PaymentCtrl --> PaymentSvc
+PaymentSvc --> PaymentRepo
+PaymentRepo --> PaymentModel
+
+' Database connections
+AuthRepo --> AuthTable
+UserRepo --> UserTable
+OrderRepo --> OrderTable
+PaymentRepo --> PaymentTable
+
+' JWT Flow
+note right of AuthSvc : "Generates JWT tokens"
+note right of UserCtrl : "Validates JWT tokens"
+note right of OrderCtrl : "Validates JWT tokens"
+note right of PaymentCtrl : "Validates JWT tokens"
+
+' Internal API calls
+note right of GatewaySvc
+  Makes internal calls
+  to validate users/orders
+  without JWT authentication
+end note
+
+@enduml

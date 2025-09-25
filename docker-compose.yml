@@ -1,0 +1,116 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: microservices-postgres
+    environment:
+      POSTGRES_DB: microservices_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - microservices-network
+
+  auth-service:
+    build: ./auth-service
+    container_name: auth-service
+    environment:
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_NAME=microservices_db
+      - DB_USER=postgres
+      - DB_PASSWORD=password
+      - JWT_SECRET=your-super-secret-jwt-key-here
+      - JWT_EXPIRES_IN=24h
+      - AUTH_SERVICE_PORT=3001
+    ports:
+      - "3001:3001"
+    depends_on:
+      - postgres
+    networks:
+      - microservices-network
+
+  user-service:
+    build: ./user-service
+    container_name: user-service
+    environment:
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_NAME=microservices_db
+      - DB_USER=postgres
+      - DB_PASSWORD=password
+      - JWT_SECRET=your-super-secret-jwt-key-here
+      - USER_SERVICE_PORT=3002
+    ports:
+      - "3002:3002"
+    depends_on:
+      - postgres
+    networks:
+      - microservices-network
+
+  order-service:
+    build: ./order-service
+    container_name: order-service
+    environment:
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_NAME=microservices_db
+      - DB_USER=postgres
+      - DB_PASSWORD=password
+      - JWT_SECRET=your-super-secret-jwt-key-here
+      - ORDER_SERVICE_PORT=3003
+    ports:
+      - "3003:3003"
+    depends_on:
+      - postgres
+    networks:
+      - microservices-network
+
+  payment-service:
+    build: ./payment-service
+    container_name: payment-service
+    environment:
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_NAME=microservices_db
+      - DB_USER=postgres
+      - DB_PASSWORD=password
+      - GATEWAY_URL=http://api-gateway:8080
+      - PAYMENT_SERVICE_PORT=3004
+    ports:
+      - "3004:3004"
+    depends_on:
+      - postgres
+      - api-gateway
+    networks:
+      - microservices-network
+
+  api-gateway:
+    build: ./api-gateway
+    container_name: api-gateway
+    environment:
+      - GATEWAY_PORT=8080
+      - AUTH_SERVICE_URL=http://auth-service:3001
+      - USER_SERVICE_URL=http://user-service:3002
+      - ORDER_SERVICE_URL=http://order-service:3003
+      - PAYMENT_SERVICE_URL=http://payment-service:3004
+    ports:
+      - "8080:8080"
+    depends_on:
+      - auth-service
+      - user-service
+      - order-service
+    networks:
+      - microservices-network
+
+volumes:
+  postgres_data:
+
+networks:
+  microservices-network:
+    driver: bridge

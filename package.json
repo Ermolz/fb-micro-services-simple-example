@@ -1,0 +1,13 @@
+{
+  "name": "microservice-example",
+  "version": "1.0.0",
+  "description": "Microservices project with Auth, User, and Order services",
+  "main": "index.js",
+  "scripts": {
+    "start": "docker-compose up --build",
+    "dev": "docker-compose up --build"
+  },
+  "keywords": ["microservices", "nodejs", "express", "postgresql"],
+  "author": "",
+  "license": "MIT"
+}

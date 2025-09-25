@@ -1,0 +1,653 @@
+{
+  "info": {
+    "name": "Microservices API",
+    "description": "API collection for testing microservices",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost"
+    },
+    {
+      "key": "authToken",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "Auth Service",
+      "item": [
+        {
+          "name": "Register User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"test@example.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}:3001/api/register",
+              "host": ["{{baseUrl}}"],
+              "port": "3001",
+              "path": ["api", "register"]
+            }
+          }
+        },
+        {
+          "name": "Login User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    pm.collectionVariables.set('authToken', response.token);",
+                  "    console.log('Token saved:', response.token);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"test@example.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}:3001/api/login",
+              "host": ["{{baseUrl}}"],
+              "port": "3001",
+              "path": ["api", "login"]
+            }
+          }
+        },
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}:3001/health",
+              "host": ["{{baseUrl}}"],
+              "port": "3001",
+              "path": ["health"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "User Service",
+      "item": [
+        {
+          "name": "Create User Profile",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"John Doe\",\n  \"email\": \"john@example.com\",\n  \"phone\": \"+1234567890\",\n  \"address\": \"123 Main Street, City, Country\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}:3002/api/users",
+              "host": ["{{baseUrl}}"],
+              "port": "3002",
+              "path": ["api", "users"]
+            }
+          }
+        },
+        {
+          "name": "Get All Users",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}:3002/api/users",
+              "host": ["{{baseUrl}}"],
+              "port": "3002",
+              "path": ["api", "users"]
+            }
+          }
+        },
+        {
+          "name": "Get User by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}:3002/api/users/1",
+              "host": ["{{baseUrl}}"],
+              "port": "3002",
+              "path": ["api", "users", "1"]
+            }
+          }
+        },
+        {
+          "name": "Update User",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"John Smith\",\n  \"email\": \"johnsmith@example.com\",\n  \"phone\": \"+1234567890\",\n  \"address\": \"456 Oak Avenue, City, Country\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}:3002/api/users/1",
+              "host": ["{{baseUrl}}"],
+              "port": "3002",
+              "path": ["api", "users", "1"]
+            }
+          }
+        },
+        {
+          "name": "Delete User",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}:3002/api/users/1",
+              "host": ["{{baseUrl}}"],
+              "port": "3002",
+              "path": ["api", "users", "1"]
+            }
+          }
+        },
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}:3002/health",
+              "host": ["{{baseUrl}}"],
+              "port": "3002",
+              "path": ["health"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Order Service",
+      "item": [
+        {
+          "name": "Create Order",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"product_name\": \"MacBook Pro\",\n  \"quantity\": 1,\n  \"price\": 1999.99\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}:3003/api/orders",
+              "host": ["{{baseUrl}}"],
+              "port": "3003",
+              "path": ["api", "orders"]
+            }
+          }
+        },
+        {
+          "name": "Get All Orders",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}:3003/api/orders",
+              "host": ["{{baseUrl}}"],
+              "port": "3003",
+              "path": ["api", "orders"]
+            }
+          }
+        },
+        {
+          "name": "Get Order by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}:3003/api/orders/1",
+              "host": ["{{baseUrl}}"],
+              "port": "3003",
+              "path": ["api", "orders", "1"]
+            }
+          }
+        },
+        {
+          "name": "Delete Order",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}:3003/api/orders/1",
+              "host": ["{{baseUrl}}"],
+              "port": "3003",
+              "path": ["api", "orders", "1"]
+            }
+          }
+        },
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}:3003/health",
+              "host": ["{{baseUrl}}"],
+              "port": "3003",
+              "path": ["health"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Complete Workflow",
+      "item": [
+        {
+          "name": "1. Register User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"workflow@example.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}:3001/api/register",
+              "host": ["{{baseUrl}}"],
+              "port": "3001",
+              "path": ["api", "register"]
+            }
+          }
+        },
+        {
+          "name": "2. Login User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    pm.collectionVariables.set('authToken', response.token);",
+                  "    console.log('Token saved:', response.token);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"workflow@example.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}:3001/api/login",
+              "host": ["{{baseUrl}}"],
+              "port": "3001",
+              "path": ["api", "login"]
+            }
+          }
+        },
+        {
+          "name": "3. Create User Profile",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Workflow User\",\n  \"email\": \"workflow@example.com\",\n  \"phone\": \"+1234567890\",\n  \"address\": \"123 Workflow Street\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}:3002/api/users",
+              "host": ["{{baseUrl}}"],
+              "port": "3002",
+              "path": ["api", "users"]
+            }
+          }
+        },
+        {
+          "name": "4. Create Order",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"product_name\": \"iPhone 15\",\n  \"quantity\": 1,\n  \"price\": 999.99\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}:3003/api/orders",
+              "host": ["{{baseUrl}}"],
+              "port": "3003",
+              "path": ["api", "orders"]
+            }
+          }
+        },
+        {
+          "name": "5. Get User Orders",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}:3003/api/orders",
+              "host": ["{{baseUrl}}"],
+              "port": "3003",
+              "path": ["api", "orders"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Payment Service",
+      "item": [
+        {
+          "name": "Create Payment",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": 1,\n  \"orderId\": 1,\n  \"amount\": 99.99\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}:3004/api/payments",
+              "host": ["{{baseUrl}}"],
+              "port": "3004",
+              "path": ["api", "payments"]
+            }
+          }
+        },
+        {
+          "name": "Get Payment by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}:3004/api/payments/1",
+              "host": ["{{baseUrl}}"],
+              "port": "3004",
+              "path": ["api", "payments", "1"]
+            }
+          }
+        },
+        {
+          "name": "Get Payments by User ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}:3004/api/payments/user/1",
+              "host": ["{{baseUrl}}"],
+              "port": "3004",
+              "path": ["api", "payments", "user", "1"]
+            }
+          }
+        },
+        {
+          "name": "Update Payment Status",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"success\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}:3004/api/payments/1/status",
+              "host": ["{{baseUrl}}"],
+              "port": "3004",
+              "path": ["api", "payments", "1", "status"]
+            }
+          }
+        },
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}:3004/health",
+              "host": ["{{baseUrl}}"],
+              "port": "3004",
+              "path": ["health"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "API Gateway",
+      "item": [
+        {
+          "name": "Get User through Gateway",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}:8080/users/1",
+              "host": ["{{baseUrl}}"],
+              "port": "8080",
+              "path": ["users", "1"]
+            }
+          }
+        },
+        {
+          "name": "Get Order through Gateway",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}:8080/orders/1",
+              "host": ["{{baseUrl}}"],
+              "port": "8080",
+              "path": ["orders", "1"]
+            }
+          }
+        },
+        {
+          "name": "Get User Internal (No Auth)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}:8080/internal/users/1",
+              "host": ["{{baseUrl}}"],
+              "port": "8080",
+              "path": ["internal", "users", "1"]
+            }
+          }
+        },
+        {
+          "name": "Get Order Internal (No Auth)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}:8080/internal/orders/1",
+              "host": ["{{baseUrl}}"],
+              "port": "8080",
+              "path": ["internal", "orders", "1"]
+            }
+          }
+        },
+        {
+          "name": "Test Order Service Direct",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}:3003/api/orders/internal/1",
+              "host": ["{{baseUrl}}"],
+              "port": "3003",
+              "path": ["api", "orders", "internal", "1"]
+            }
+          }
+        },
+        {
+          "name": "Test User Service Direct",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}:3002/api/users/internal/1",
+              "host": ["{{baseUrl}}"],
+              "port": "3002",
+              "path": ["api", "users", "internal", "1"]
+            }
+          }
+        },
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}:8080/health",
+              "host": ["{{baseUrl}}"],
+              "port": "8080",
+              "path": ["health"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

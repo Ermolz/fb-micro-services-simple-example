@@ -1,0 +1,12 @@
+# Database Configuration
+DB_HOST=postgres
+DB_PORT=5432
+DB_NAME=microservices_db
+DB_USER=postgres
+DB_PASSWORD=password
+
+# JWT Configuration
+JWT_SECRET=your-super-secret-jwt-key-here
+
+# Service Configuration
+ORDER_SERVICE_PORT=3003
