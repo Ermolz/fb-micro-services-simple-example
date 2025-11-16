@@ -28,17 +28,37 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
+      - name: Install Docker Compose
+        run: |
+          echo "Installing Docker Compose..."
+          DOCKER_COMPOSE_VERSION=$(curl -s https://api.github.com/repos/docker/compose/releases/latest | grep 'tag_name' | cut -d\" -f4)
+          sudo curl -L "https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+          sudo chmod +x /usr/local/bin/docker-compose
+          docker-compose --version || {
+            echo "❌ Docker Compose installation failed"
+            exit 1
+          }
+          echo "✅ Docker Compose installed successfully"
+
+      - name: Verify docker-compose.yml exists
+        run: |
+          if [ ! -f "docker-compose.yml" ]; then
+            echo "❌ docker-compose.yml not found!"
+            exit 1
+          fi
+          echo "✅ docker-compose.yml found"
+
       - name: Build ${{ matrix.service }}
         run: |
           echo "🔨 Building ${{ matrix.service }}..."
-          docker-compose build ${{ matrix.service }} 2>&1 | tee build-${{ matrix.service }}.log
-          
-          if [ ${PIPESTATUS[0]} -ne 0 ]; then
+          if docker-compose build ${{ matrix.service }} 2>&1 | tee build-${{ matrix.service }}.log; then
+            echo "✅ Build successful for ${{ matrix.service }}"
+          else
             echo "❌ Build failed for ${{ matrix.service }}"
+            echo "Last 50 lines of build log:"
+            tail -50 build-${{ matrix.service }}.log
             exit 1
           fi
-          
-          echo "✅ Build successful for ${{ matrix.service }}"
 
       - name: Upload build logs
         if: failure()
