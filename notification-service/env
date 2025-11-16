@@ -1,0 +1,9 @@
+# MongoDB Configuration
+MONGODB_URL=mongodb://mongodb:27017
+MONGODB_DB=notifications_db
+
+# Kafka Configuration
+KAFKA_BROKER=kafka:9092
+
+# Service Configuration
+NOTIFICATION_SERVICE_PORT=3005

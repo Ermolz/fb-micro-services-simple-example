@@ -1,0 +1,1825 @@
+{
+  "info": {
+    "name": "Microservices API",
+    "description": "API collection for testing microservices",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost"
+    },
+    {
+      "key": "authToken",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "Auth Service",
+      "item": [
+        {
+          "name": "Register User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"test@example.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}:3001/api/register",
+              "host": ["{{baseUrl}}"],
+              "port": "3001",
+              "path": ["api", "register"]
+            }
+          }
+        },
+        {
+          "name": "Login User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    pm.collectionVariables.set('authToken', response.token);",
+                  "    console.log('Token saved:', response.token);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"test@example.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}:3001/api/login",
+              "host": ["{{baseUrl}}"],
+              "port": "3001",
+              "path": ["api", "login"]
+            }
+          }
+        },
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}:3001/health",
+              "host": ["{{baseUrl}}"],
+              "port": "3001",
+              "path": ["health"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "User Service",
+      "item": [
+        {
+          "name": "Create User Profile",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"John Doe\",\n  \"email\": \"john@example.com\",\n  \"phone\": \"+1234567890\",\n  \"address\": \"123 Main Street, City, Country\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}:3002/api/users",
+              "host": ["{{baseUrl}}"],
+              "port": "3002",
+              "path": ["api", "users"]
+            }
+          }
+        },
+        {
+          "name": "Get All Users",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}:3002/api/users",
+              "host": ["{{baseUrl}}"],
+              "port": "3002",
+              "path": ["api", "users"]
+            }
+          }
+        },
+        {
+          "name": "Get User by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}:3002/api/users/1",
+              "host": ["{{baseUrl}}"],
+              "port": "3002",
+              "path": ["api", "users", "1"]
+            }
+          }
+        },
+        {
+          "name": "Update User",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"John Smith\",\n  \"email\": \"johnsmith@example.com\",\n  \"phone\": \"+1234567890\",\n  \"address\": \"456 Oak Avenue, City, Country\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}:3002/api/users/1",
+              "host": ["{{baseUrl}}"],
+              "port": "3002",
+              "path": ["api", "users", "1"]
+            }
+          }
+        },
+        {
+          "name": "Delete User",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}:3002/api/users/1",
+              "host": ["{{baseUrl}}"],
+              "port": "3002",
+              "path": ["api", "users", "1"]
+            }
+          }
+        },
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}:3002/health",
+              "host": ["{{baseUrl}}"],
+              "port": "3002",
+              "path": ["health"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Order Service",
+      "item": [
+        {
+          "name": "Create Order",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"product_name\": \"MacBook Pro\",\n  \"quantity\": 1,\n  \"price\": 1999.99\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}:3003/api/orders",
+              "host": ["{{baseUrl}}"],
+              "port": "3003",
+              "path": ["api", "orders"]
+            }
+          }
+        },
+        {
+          "name": "Get All Orders",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}:3003/api/orders",
+              "host": ["{{baseUrl}}"],
+              "port": "3003",
+              "path": ["api", "orders"]
+            }
+          }
+        },
+        {
+          "name": "Get Order by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}:3003/api/orders/1",
+              "host": ["{{baseUrl}}"],
+              "port": "3003",
+              "path": ["api", "orders", "1"]
+            }
+          }
+        },
+        {
+          "name": "Delete Order",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}:3003/api/orders/1",
+              "host": ["{{baseUrl}}"],
+              "port": "3003",
+              "path": ["api", "orders", "1"]
+            }
+          }
+        },
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}:3003/health",
+              "host": ["{{baseUrl}}"],
+              "port": "3003",
+              "path": ["health"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Complete Workflow",
+      "item": [
+        {
+          "name": "1. Register User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"workflow@example.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}:3001/api/register",
+              "host": ["{{baseUrl}}"],
+              "port": "3001",
+              "path": ["api", "register"]
+            }
+          }
+        },
+        {
+          "name": "2. Login User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    pm.collectionVariables.set('authToken', response.token);",
+                  "    console.log('Token saved:', response.token);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"workflow@example.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}:3001/api/login",
+              "host": ["{{baseUrl}}"],
+              "port": "3001",
+              "path": ["api", "login"]
+            }
+          }
+        },
+        {
+          "name": "3. Create User Profile",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Workflow User\",\n  \"email\": \"workflow@example.com\",\n  \"phone\": \"+1234567890\",\n  \"address\": \"123 Workflow Street\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}:3002/api/users",
+              "host": ["{{baseUrl}}"],
+              "port": "3002",
+              "path": ["api", "users"]
+            }
+          }
+        },
+        {
+          "name": "4. Create Order",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"product_name\": \"iPhone 15\",\n  \"quantity\": 1,\n  \"price\": 999.99\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}:3003/api/orders",
+              "host": ["{{baseUrl}}"],
+              "port": "3003",
+              "path": ["api", "orders"]
+            }
+          }
+        },
+        {
+          "name": "5. Get User Orders",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}:3003/api/orders",
+              "host": ["{{baseUrl}}"],
+              "port": "3003",
+              "path": ["api", "orders"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Payment Service",
+      "item": [
+        {
+          "name": "Create Payment",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": 1,\n  \"orderId\": 1,\n  \"amount\": 99.99\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}:3004/api/payments",
+              "host": ["{{baseUrl}}"],
+              "port": "3004",
+              "path": ["api", "payments"]
+            }
+          }
+        },
+        {
+          "name": "Get Payment by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}:3004/api/payments/1",
+              "host": ["{{baseUrl}}"],
+              "port": "3004",
+              "path": ["api", "payments", "1"]
+            }
+          }
+        },
+        {
+          "name": "Get Payments by User ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}:3004/api/payments/user/1",
+              "host": ["{{baseUrl}}"],
+              "port": "3004",
+              "path": ["api", "payments", "user", "1"]
+            }
+          }
+        },
+        {
+          "name": "Update Payment Status",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"success\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}:3004/api/payments/1/status",
+              "host": ["{{baseUrl}}"],
+              "port": "3004",
+              "path": ["api", "payments", "1", "status"]
+            }
+          }
+        },
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}:3004/health",
+              "host": ["{{baseUrl}}"],
+              "port": "3004",
+              "path": ["health"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "API Gateway",
+      "item": [
+        {
+          "name": "Get User through Gateway",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}:8080/users/1",
+              "host": ["{{baseUrl}}"],
+              "port": "8080",
+              "path": ["users", "1"]
+            }
+          }
+        },
+        {
+          "name": "Get Order through Gateway",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}:8080/orders/1",
+              "host": ["{{baseUrl}}"],
+              "port": "8080",
+              "path": ["orders", "1"]
+            }
+          }
+        },
+        {
+          "name": "Get User Internal (No Auth)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}:8080/internal/users/1",
+              "host": ["{{baseUrl}}"],
+              "port": "8080",
+              "path": ["internal", "users", "1"]
+            }
+          }
+        },
+        {
+          "name": "Get Order Internal (No Auth)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}:8080/internal/orders/1",
+              "host": ["{{baseUrl}}"],
+              "port": "8080",
+              "path": ["internal", "orders", "1"]
+            }
+          }
+        },
+        {
+          "name": "Test Order Service Direct",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}:3003/api/orders/internal/1",
+              "host": ["{{baseUrl}}"],
+              "port": "3003",
+              "path": ["api", "orders", "internal", "1"]
+            }
+          }
+        },
+        {
+          "name": "Test User Service Direct",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}:3002/api/users/internal/1",
+              "host": ["{{baseUrl}}"],
+              "port": "3002",
+              "path": ["api", "users", "internal", "1"]
+            }
+          }
+        },
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}:8080/health",
+              "host": ["{{baseUrl}}"],
+              "port": "8080",
+              "path": ["health"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Notification Service",
+      "item": [
+        {
+          "name": "Get Notifications by User ID",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}:3005/api/notifications/user/1",
+              "host": ["{{baseUrl}}"],
+              "port": "3005",
+              "path": ["api", "notifications", "user", "1"]
+            }
+          }
+        },
+        {
+          "name": "Get Notification by ID",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}:3005/api/notifications/1",
+              "host": ["{{baseUrl}}"],
+              "port": "3005",
+              "path": ["api", "notifications", "1"]
+            }
+          }
+        },
+        {
+          "name": "Mark Notification as Read",
+          "request": {
+            "method": "PUT",
+            "url": {
+              "raw": "{{baseUrl}}:3005/api/notifications/1/read",
+              "host": ["{{baseUrl}}"],
+              "port": "3005",
+              "path": ["api", "notifications", "1", "read"]
+            }
+          }
+        },
+        {
+          "name": "Mark All as Read",
+          "request": {
+            "method": "PUT",
+            "url": {
+              "raw": "{{baseUrl}}:3005/api/notifications/user/1/read-all",
+              "host": ["{{baseUrl}}"],
+              "port": "3005",
+              "path": ["api", "notifications", "user", "1", "read-all"]
+            }
+          }
+        },
+        {
+          "name": "Get Unread Count",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}:3005/api/notifications/user/1/unread-count",
+              "host": ["{{baseUrl}}"],
+              "port": "3005",
+              "path": ["api", "notifications", "user", "1", "unread-count"]
+            }
+          }
+        },
+        {
+          "name": "Delete Notification",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{baseUrl}}:3005/api/notifications/1",
+              "host": ["{{baseUrl}}"],
+              "port": "3005",
+              "path": ["api", "notifications", "1"]
+            }
+          }
+        },
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}:3005/health",
+              "host": ["{{baseUrl}}"],
+              "port": "3005",
+              "path": ["health"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Complete Workflows",
+      "item": [
+        {
+          "name": "1. Basic Workflow",
+          "item": [
+            {
+              "name": "1. Register User",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "if (pm.response.code === 201) {",
+                      "    console.log('User registered successfully');",
+                      "}"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"workflow@example.com\",\n  \"password\": \"password123\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}:3001/api/register",
+                  "host": ["{{baseUrl}}"],
+                  "port": "3001",
+                  "path": ["api", "register"]
+                }
+              }
+            },
+            {
+              "name": "2. Login User",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "if (pm.response.code === 200) {",
+                      "    const response = pm.response.json();",
+                      "    pm.collectionVariables.set('authToken', response.token);",
+                      "    console.log('Token saved:', response.token);",
+                      "}"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"workflow@example.com\",\n  \"password\": \"password123\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}:3001/api/login",
+                  "host": ["{{baseUrl}}"],
+                  "port": "3001",
+                  "path": ["api", "login"]
+                }
+              }
+            },
+            {
+              "name": "3. Create User Profile",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{authToken}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Workflow User\",\n  \"email\": \"workflow@example.com\",\n  \"phone\": \"+1234567890\",\n  \"address\": \"123 Workflow Street\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}:3002/api/users",
+                  "host": ["{{baseUrl}}"],
+                  "port": "3002",
+                  "path": ["api", "users"]
+                }
+              }
+            },
+            {
+              "name": "4. Create Order",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{authToken}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"product_name\": \"MacBook Pro\",\n  \"quantity\": 1,\n  \"price\": 1999.99\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}:3003/api/orders",
+                  "host": ["{{baseUrl}}"],
+                  "port": "3003",
+                  "path": ["api", "orders"]
+                }
+              }
+            },
+            {
+              "name": "5. Create Payment",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "if (pm.response.code === 201) {",
+                      "    console.log('Payment created - Kafka event should be published');",
+                      "    setTimeout(() => {",
+                      "        console.log('Waiting for Kafka consumer to process event...');",
+                      "    }, 2000);",
+                      "}"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{authToken}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"userId\": 1,\n  \"orderId\": 1,\n  \"amount\": 1999.99\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}:3004/api/payments",
+                  "host": ["{{baseUrl}}"],
+                  "port": "3004",
+                  "path": ["api", "payments"]
+                }
+              }
+            },
+            {
+              "name": "6. Check Notifications (Auto-created via Kafka)",
+              "request": {
+                "method": "GET",
+                "url": {
+                  "raw": "{{baseUrl}}:3005/api/notifications/user/1",
+                  "host": ["{{baseUrl}}"],
+                  "port": "3005",
+                  "path": ["api", "notifications", "user", "1"]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "2. Redis Cache Testing",
+          "item": [
+            {
+              "name": "1. Login (Get Token)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "if (pm.response.code === 200) {",
+                      "    const response = pm.response.json();",
+                      "    pm.collectionVariables.set('authToken', response.token);",
+                      "}"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"workflow@example.com\",\n  \"password\": \"password123\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}:3001/api/login",
+                  "host": ["{{baseUrl}}"],
+                  "port": "3001",
+                  "path": ["api", "login"]
+                }
+              }
+            },
+            {
+              "name": "2. First Request (From Database)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "console.log('First request - should come from PostgreSQL database');",
+                      "pm.test('Response time should be normal', function () {",
+                      "    pm.expect(pm.response.responseTime).to.be.below(1000);",
+                      "});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{authToken}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}:3002/api/users/1",
+                  "host": ["{{baseUrl}}"],
+                  "port": "3002",
+                  "path": ["api", "users", "1"]
+                }
+              }
+            },
+            {
+              "name": "3. Second Request (From Redis Cache)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "console.log('Second request - should come from Redis cache (faster)');",
+                      "pm.test('Response time should be faster', function () {",
+                      "    pm.expect(pm.response.responseTime).to.be.below(500);",
+                      "});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{authToken}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}:3002/api/users/1",
+                  "host": ["{{baseUrl}}"],
+                  "port": "3002",
+                  "path": ["api", "users", "1"]
+                }
+              }
+            },
+            {
+              "name": "4. Update User (Cache Invalidation)",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{authToken}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Updated User Name\",\n  \"email\": \"updated@example.com\",\n  \"phone\": \"+9876543210\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}:3002/api/users/1",
+                  "host": ["{{baseUrl}}"],
+                  "port": "3002",
+                  "path": ["api", "users", "1"]
+                }
+              }
+            },
+            {
+              "name": "5. Third Request (Cache Updated)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "console.log('Third request - cache should be updated with new data');",
+                      "const response = pm.response.json();",
+                      "pm.test('Name should be updated', function () {",
+                      "    pm.expect(response.user.name).to.equal('Updated User Name');",
+                      "});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{authToken}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}:3002/api/users/1",
+                  "host": ["{{baseUrl}}"],
+                  "port": "3002",
+                  "path": ["api", "users", "1"]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "3. Kafka Event Testing",
+          "item": [
+            {
+              "name": "1. Login (Get Token)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "if (pm.response.code === 200) {",
+                      "    const response = pm.response.json();",
+                      "    pm.collectionVariables.set('authToken', response.token);",
+                      "}"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"workflow@example.com\",\n  \"password\": \"password123\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}:3001/api/login",
+                  "host": ["{{baseUrl}}"],
+                  "port": "3001",
+                  "path": ["api", "login"]
+                }
+              }
+            },
+            {
+              "name": "2. Create Order",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{authToken}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"product_name\": \"iPhone 15\",\n  \"quantity\": 1,\n  \"price\": 999.99\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}:3003/api/orders",
+                  "host": ["{{baseUrl}}"],
+                  "port": "3003",
+                  "path": ["api", "orders"]
+                }
+              }
+            },
+            {
+              "name": "3. Create Payment (Publishes Kafka Event)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "if (pm.response.code === 201) {",
+                      "    console.log('Payment created - Kafka event: payment.created published');",
+                      "    const response = pm.response.json();",
+                      "    pm.collectionVariables.set('paymentId', response.payment.paymentId);",
+                      "}"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{authToken}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"userId\": 1,\n  \"orderId\": 2,\n  \"amount\": 999.99\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}:3004/api/payments",
+                  "host": ["{{baseUrl}}"],
+                  "port": "3004",
+                  "path": ["api", "payments"]
+                }
+              }
+            },
+            {
+              "name": "4. Wait for Kafka Consumer (2 seconds)",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      "console.log('Waiting 2 seconds for Kafka consumer to process event...');",
+                      "setTimeout(() => {}, 2000);"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "url": {
+                  "raw": "{{baseUrl}}:3005/health",
+                  "host": ["{{baseUrl}}"],
+                  "port": "3005",
+                  "path": ["health"]
+                }
+              }
+            },
+            {
+              "name": "5. Check Notification (Auto-created via Kafka)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('Notification should be created', function () {",
+                      "    const response = pm.response.json();",
+                      "    pm.expect(response.notifications.length).to.be.above(0);",
+                      "    const paymentNotification = response.notifications.find(n => n.type === 'payment');",
+                      "    pm.expect(paymentNotification).to.exist;",
+                      "    pm.expect(paymentNotification.title).to.include('Payment Created');",
+                      "});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "url": {
+                  "raw": "{{baseUrl}}:3005/api/notifications/user/1",
+                  "host": ["{{baseUrl}}"],
+                  "port": "3005",
+                  "path": ["api", "notifications", "user", "1"]
+                }
+              }
+            },
+            {
+              "name": "6. Update Payment Status (Publishes Another Kafka Event)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "if (pm.response.code === 200) {",
+                      "    console.log('Payment status updated - Kafka event: payment.status.updated published');",
+                      "}"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{authToken}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"status\": \"success\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}:3004/api/payments/{{paymentId}}/status",
+                  "host": ["{{baseUrl}}"],
+                  "port": "3004",
+                  "path": ["api", "payments", "{{paymentId}}", "status"]
+                }
+              }
+            },
+            {
+              "name": "7. Wait for Kafka Consumer (2 seconds)",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      "console.log('Waiting 2 seconds for Kafka consumer to process event...');",
+                      "setTimeout(() => {}, 2000);"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "url": {
+                  "raw": "{{baseUrl}}:3005/health",
+                  "host": ["{{baseUrl}}"],
+                  "port": "3005",
+                  "path": ["health"]
+                }
+              }
+            },
+            {
+              "name": "8. Check New Notification (Status Update)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('New notification should be created', function () {",
+                      "    const response = pm.response.json();",
+                      "    const statusNotification = response.notifications.find(n => ",
+                      "        n.title === 'Payment Status Updated' && n.message.includes('success'));",
+                      "    pm.expect(statusNotification).to.exist;",
+                      "});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "url": {
+                  "raw": "{{baseUrl}}:3005/api/notifications/user/1",
+                  "host": ["{{baseUrl}}"],
+                  "port": "3005",
+                  "path": ["api", "notifications", "user", "1"]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "4. Notification Service Testing",
+          "item": [
+            {
+              "name": "1. Create Notification Manually",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"userId\": 1,\n  \"type\": \"info\",\n  \"title\": \"Welcome!\",\n  \"message\": \"Welcome to our platform!\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}:3005/api/notifications",
+                  "host": ["{{baseUrl}}"],
+                  "port": "3005",
+                  "path": ["api", "notifications"]
+                }
+              }
+            },
+            {
+              "name": "2. Get All Notifications",
+              "request": {
+                "method": "GET",
+                "url": {
+                  "raw": "{{baseUrl}}:3005/api/notifications/user/1",
+                  "host": ["{{baseUrl}}"],
+                  "port": "3005",
+                  "path": ["api", "notifications", "user", "1"]
+                }
+              }
+            },
+            {
+              "name": "3. Get Unread Count",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "const response = pm.response.json();",
+                      "pm.collectionVariables.set('unreadCount', response.unreadCount);",
+                      "console.log('Unread notifications:', response.unreadCount);"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "url": {
+                  "raw": "{{baseUrl}}:3005/api/notifications/user/1/unread-count",
+                  "host": ["{{baseUrl}}"],
+                  "port": "3005",
+                  "path": ["api", "notifications", "user", "1", "unread-count"]
+                }
+              }
+            },
+            {
+              "name": "4. Mark Notification as Read",
+              "request": {
+                "method": "PUT",
+                "url": {
+                  "raw": "{{baseUrl}}:3005/api/notifications/1/read",
+                  "host": ["{{baseUrl}}"],
+                  "port": "3005",
+                  "path": ["api", "notifications", "1", "read"]
+                }
+              }
+            },
+            {
+              "name": "5. Check Unread Count (Should Decrease)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "const response = pm.response.json();",
+                      "const previousCount = pm.collectionVariables.get('unreadCount');",
+                      "pm.test('Unread count should decrease', function () {",
+                      "    pm.expect(response.unreadCount).to.be.below(previousCount);",
+                      "});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "url": {
+                  "raw": "{{baseUrl}}:3005/api/notifications/user/1/unread-count",
+                  "host": ["{{baseUrl}}"],
+                  "port": "3005",
+                  "path": ["api", "notifications", "user", "1", "unread-count"]
+                }
+              }
+            },
+            {
+              "name": "6. Mark All as Read",
+              "request": {
+                "method": "PUT",
+                "url": {
+                  "raw": "{{baseUrl}}:3005/api/notifications/user/1/read-all",
+                  "host": ["{{baseUrl}}"],
+                  "port": "3005",
+                  "path": ["api", "notifications", "user", "1", "read-all"]
+                }
+              }
+            },
+            {
+              "name": "7. Verify All Read",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('All notifications should be read', function () {",
+                      "    const response = pm.response.json();",
+                      "    pm.expect(response.unreadCount).to.equal(0);",
+                      "});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "url": {
+                  "raw": "{{baseUrl}}:3005/api/notifications/user/1/unread-count",
+                  "host": ["{{baseUrl}}"],
+                  "port": "3005",
+                  "path": ["api", "notifications", "user", "1", "unread-count"]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "5. Full Integration Test",
+          "item": [
+            {
+              "name": "1. Register New User",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "if (pm.response.code === 201) {",
+                      "    console.log('User registered');",
+                      "}"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"integration@test.com\",\n  \"password\": \"test123\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}:3001/api/register",
+                  "host": ["{{baseUrl}}"],
+                  "port": "3001",
+                  "path": ["api", "register"]
+                }
+              }
+            },
+            {
+              "name": "2. Login",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "if (pm.response.code === 200) {",
+                      "    const response = pm.response.json();",
+                      "    pm.collectionVariables.set('authToken', response.token);",
+                      "    pm.collectionVariables.set('userId', response.user.id);",
+                      "    console.log('Logged in, userId:', response.user.id);",
+                      "}"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"integration@test.com\",\n  \"password\": \"test123\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}:3001/api/login",
+                  "host": ["{{baseUrl}}"],
+                  "port": "3001",
+                  "path": ["api", "login"]
+                }
+              }
+            },
+            {
+              "name": "3. Create User Profile",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{authToken}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Integration Test User\",\n  \"email\": \"integration@test.com\",\n  \"phone\": \"+1234567890\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}:3002/api/users",
+                  "host": ["{{baseUrl}}"],
+                  "port": "3002",
+                  "path": ["api", "users"]
+                }
+              }
+            },
+            {
+              "name": "4. Get User (First - From DB)",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{authToken}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}:3002/api/users/{{userId}}",
+                  "host": ["{{baseUrl}}"],
+                  "port": "3002",
+                  "path": ["api", "users", "{{userId}}"]
+                }
+              }
+            },
+            {
+              "name": "5. Get User (Second - From Redis)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('Should be faster (from cache)', function () {",
+                      "    pm.expect(pm.response.responseTime).to.be.below(500);",
+                      "});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{authToken}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}:3002/api/users/{{userId}}",
+                  "host": ["{{baseUrl}}"],
+                  "port": "3002",
+                  "path": ["api", "users", "{{userId}}"]
+                }
+              }
+            },
+            {
+              "name": "6. Create Order",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "if (pm.response.code === 201) {",
+                      "    const response = pm.response.json();",
+                      "    pm.collectionVariables.set('orderId', response.order.id);",
+                      "    console.log('Order created, orderId:', response.order.id);",
+                      "}"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{authToken}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"product_name\": \"Tesla Model 3\",\n  \"quantity\": 1,\n  \"price\": 39999.99\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}:3003/api/orders",
+                  "host": ["{{baseUrl}}"],
+                  "port": "3003",
+                  "path": ["api", "orders"]
+                }
+              }
+            },
+            {
+              "name": "7. Create Payment (Kafka Event)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "if (pm.response.code === 201) {",
+                      "    const response = pm.response.json();",
+                      "    pm.collectionVariables.set('paymentId', response.payment.paymentId);",
+                      "    console.log('Payment created, Kafka event published');",
+                      "}"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{authToken}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"userId\": {{userId}},\n  \"orderId\": {{orderId}},\n  \"amount\": 39999.99\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}:3004/api/payments",
+                  "host": ["{{baseUrl}}"],
+                  "port": "3004",
+                  "path": ["api", "payments"]
+                }
+              }
+            },
+            {
+              "name": "8. Wait for Kafka Processing",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      "console.log('Waiting 3 seconds for Kafka consumer...');",
+                      "setTimeout(() => {}, 3000);"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "url": {
+                  "raw": "{{baseUrl}}:3005/health",
+                  "host": ["{{baseUrl}}"],
+                  "port": "3005",
+                  "path": ["health"]
+                }
+              }
+            },
+            {
+              "name": "9. Check Notifications (Auto-created)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('Notification should be created via Kafka', function () {",
+                      "    const response = pm.response.json();",
+                      "    pm.expect(response.notifications.length).to.be.above(0);",
+                      "    const paymentNotif = response.notifications.find(n => n.type === 'payment');",
+                      "    pm.expect(paymentNotif).to.exist;",
+                      "});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "url": {
+                  "raw": "{{baseUrl}}:3005/api/notifications/user/{{userId}}",
+                  "host": ["{{baseUrl}}"],
+                  "port": "3005",
+                  "path": ["api", "notifications", "user", "{{userId}}"]
+                }
+              }
+            },
+            {
+              "name": "10. Update Payment Status",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{authToken}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"status\": \"success\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}:3004/api/payments/{{paymentId}}/status",
+                  "host": ["{{baseUrl}}"],
+                  "port": "3004",
+                  "path": ["api", "payments", "{{paymentId}}", "status"]
+                }
+              }
+            },
+            {
+              "name": "11. Wait for Kafka Processing",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      "console.log('Waiting 3 seconds for Kafka consumer...');",
+                      "setTimeout(() => {}, 3000);"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "url": {
+                  "raw": "{{baseUrl}}:3005/health",
+                  "host": ["{{baseUrl}}"],
+                  "port": "3005",
+                  "path": ["health"]
+                }
+              }
+            },
+            {
+              "name": "12. Verify All Systems Working",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('All systems integrated successfully', function () {",
+                      "    const response = pm.response.json();",
+                      "    pm.expect(response.notifications.length).to.be.above(1);",
+                      "    console.log('Integration test completed successfully!');",
+                      "});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "url": {
+                  "raw": "{{baseUrl}}:3005/api/notifications/user/{{userId}}",
+                  "host": ["{{baseUrl}}"],
+                  "port": "3005",
+                  "path": ["api", "notifications", "user", "{{userId}}"]
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

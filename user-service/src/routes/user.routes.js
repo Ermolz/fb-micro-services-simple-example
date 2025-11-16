@@ -10,7 +10,6 @@ router.post('/', authenticateToken, userController.createUserProfile.bind(userCo
 router.put('/:id', authenticateToken, userController.updateUserProfile.bind(userController));
 router.delete('/:id', authenticateToken, userController.deleteUserProfile.bind(userController));
 
-// Internal routes for Payment Service (no auth required)
 router.get('/internal/:id', userController.getUserById.bind(userController));
 
 module.exports = router;

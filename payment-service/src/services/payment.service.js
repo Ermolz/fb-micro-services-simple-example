@@ -1,5 +1,6 @@
 const paymentRepository = require('../repositories/payment.repository');
 const gatewayService = require('./gateway.service');
+const kafkaService = require('./kafka.service');
 
 class PaymentService {
   async createPayment(paymentData) {
@@ -35,7 +36,11 @@ class PaymentService {
     }
 
     const payment = await paymentRepository.create(userId, orderId, amount);
-    return payment.toObject();
+    const paymentObject = payment.toObject();
+    
+    await kafkaService.publishPaymentCreated(paymentObject);
+    
+    return paymentObject;
   }
 
   async getPaymentById(paymentId) {
@@ -61,7 +66,11 @@ class PaymentService {
     if (!payment) {
       throw new Error('Payment not found');
     }
-    return payment.toObject();
+    const paymentObject = payment.toObject();
+    
+    await kafkaService.publishPaymentStatusUpdated(paymentObject);
+    
+    return paymentObject;
   }
 }
 

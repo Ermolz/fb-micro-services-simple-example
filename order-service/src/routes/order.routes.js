@@ -9,7 +9,6 @@ router.get('/:id', authenticateToken, orderController.getOrderById.bind(orderCon
 router.post('/', authenticateToken, orderController.createOrder.bind(orderController));
 router.delete('/:id', authenticateToken, orderController.deleteOrder.bind(orderController));
 
-// Internal routes for Payment Service (no auth required)
 router.get('/internal/:id', orderController.getOrderByIdInternal.bind(orderController));
 
 module.exports = router;

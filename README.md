@@ -1,16 +1,26 @@
 # Microservices Project
 
-Node.js microservices project using Express, PostgreSQL and Docker.
+Node.js microservices project using Express, PostgreSQL, MongoDB, Kafka, Redis and Docker.
 
 ## Architecture
 
-Project consists of 4 microservices with layered architecture:
+Project consists of 5 microservices with layered architecture:
 
 1. **Auth Service** (port 3001) - user registration and authentication
-2. **User Service** (port 3002) - user profile management
+2. **User Service** (port 3002) - user profile management with Redis caching
 3. **Order Service** (port 3003) - order management
-4. **Payment Service** (port 3004) - payment processing
-5. **API Gateway** (port 8080) - service integration
+4. **Payment Service** (port 3004) - payment processing with Kafka events
+5. **Notification Service** (port 3005) - notifications with MongoDB and Kafka consumer
+6. **API Gateway** (port 8080) - service integration
+
+## Technologies
+
+- **PostgreSQL** - Shared database for Auth, User, Order, Payment services
+- **MongoDB** - Own database for Notification Service (Database per Service pattern)
+- **Kafka** - Asynchronous event-driven communication
+- **Redis** - In-memory caching for User Service
+- **Docker** - Containerization
+- **Docker Compose** - Orchestration
 
 ### Service structure:
 ```
@@ -58,12 +68,71 @@ All services will be available on the following ports:
 - User Service: http://localhost:3002
 - Order Service: http://localhost:3003
 - Payment Service: http://localhost:3004
+- Notification Service: http://localhost:3005
 - API Gateway: http://localhost:8080
 - PostgreSQL: localhost:5432
+- MongoDB: localhost:27017
+- Redis: localhost:6379
+- Kafka: localhost:9092
+
+## CI/CD with GitHub Actions
+
+This project includes automated testing workflows that verify all services build and run correctly.
+
+### Available Workflows
+
+1. **Full Service Test** (`.github/workflows/test-services.yml`)
+   - Builds all Docker images
+   - Starts all services
+   - Performs health checks
+   - Generates detailed reports
+   - Uploads logs as artifacts
+
+2. **Quick Build Check** (`.github/workflows/build-check.yml`)
+   - Fast parallel build verification
+   - Tests each service individually
+   - Provides quick feedback
+
+### Viewing Results
+
+1. Go to **Actions** tab in GitHub
+2. Click on a workflow run
+3. View logs and download artifacts
+4. Check PR comments for automated reports
+
+### Local Testing
+
+Test builds locally using the provided script:
+
+```bash
+# Make script executable (Linux/Mac)
+chmod +x scripts/test-build.sh
+
+# Run test
+./scripts/test-build.sh
+```
+
+Or manually:
+
+```bash
+# Build and start
+docker-compose up --build -d
+
+# Wait for services
+sleep 30
+
+# Check health
+curl http://localhost:8080/health
+curl http://localhost:3001/api/register
+curl http://localhost:3002/health
+# ... etc
+```
+
+For more details, see [.github/workflows/README.md](.github/workflows/README.md)
 
 ## Architecture Diagram
 
-![Architecture Diagram](diagram/architecture-diagram.jpg)
+![Architecture Diagram](docs/diagram/architecture-diagram.png)
 
 
 ## API Endpoints
@@ -199,6 +268,44 @@ curl -X PUT http://localhost:3004/api/payments/1/status \
   -d '{"status": "success"}'
 ```
 
+### Notification Service (http://localhost:3005)
+
+#### GET /api/notifications/user/:userId
+Get notifications by user ID
+```bash
+curl -X GET http://localhost:3005/api/notifications/user/1
+```
+
+#### GET /api/notifications/:id
+Get notification by ID
+```bash
+curl -X GET http://localhost:3005/api/notifications/1
+```
+
+#### PUT /api/notifications/:id/read
+Mark notification as read
+```bash
+curl -X PUT http://localhost:3005/api/notifications/1/read
+```
+
+#### PUT /api/notifications/user/:userId/read-all
+Mark all notifications as read for user
+```bash
+curl -X PUT http://localhost:3005/api/notifications/user/1/read-all
+```
+
+#### GET /api/notifications/user/:userId/unread-count
+Get unread notifications count
+```bash
+curl -X GET http://localhost:3005/api/notifications/user/1/unread-count
+```
+
+#### DELETE /api/notifications/:id
+Delete notification
+```bash
+curl -X DELETE http://localhost:3005/api/notifications/1
+```
+
 ### API Gateway (http://localhost:8080)
 
 #### GET /users/:id
@@ -226,6 +333,61 @@ Internal endpoint for Payment Service (no auth required)
 ```bash
 curl -X GET http://localhost:8080/internal/orders/1
 ```
+
+## Kafka Event-Driven Communication
+
+Payment Service publishes events to Kafka when payments are created or updated:
+
+- **Topic**: `payment-events`
+- **Events**:
+  - `payment.created` - Published when a payment is created
+  - `payment.status.updated` - Published when payment status changes
+
+Notification Service consumes these events and creates notifications automatically.
+
+### Example Kafka Event:
+```json
+{
+  "eventType": "payment.created",
+  "timestamp": "2024-01-01T12:00:00.000Z",
+  "data": {
+    "paymentId": 1,
+    "userId": 1,
+    "orderId": 1,
+    "amount": 99.99,
+    "status": "success"
+  }
+}
+```
+
+## Redis Caching
+
+User Service uses Redis for in-memory caching:
+
+- **Cache Strategy**: Cache-aside pattern
+- **TTL**: 1 hour (3600 seconds)
+- **Cache Keys**: `user:{userId}`
+- **Benefits**: 
+  - Faster response times for frequently accessed users
+  - Reduced database load
+  - Automatic cache invalidation on updates/deletes
+
+### Cache Flow:
+1. Check Redis cache first
+2. If not found, query PostgreSQL database
+3. Store result in Redis for future requests
+4. Invalidate cache on user updates/deletes
+
+## MongoDB - Database per Service
+
+Notification Service uses MongoDB as its own database:
+
+- **Pattern**: Database per Service
+- **Benefits**:
+  - Independent schema evolution
+  - Technology choice flexibility
+  - Service isolation
+  - Better scalability
 
 ## Complete Workflow Example
 

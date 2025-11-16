@@ -1,4 +1,5 @@
 const userRepository = require('../repositories/user.repository');
+const cacheService = require('./cache.service');
 
 class UserService {
   async getAllUsers() {
@@ -7,11 +8,23 @@ class UserService {
   }
 
   async getUserById(id) {
+    const cacheKey = `user:${id}`;
+    const cachedUser = await cacheService.get(cacheKey);
+    
+    if (cachedUser) {
+      console.log('User retrieved from cache');
+      return cachedUser;
+    }
+
     const user = await userRepository.findById(id);
     if (!user) {
       throw new Error('User not found');
     }
-    return user.toObject();
+    
+    const userObject = user.toObject();
+    await cacheService.set(cacheKey, userObject, 3600);
+    
+    return userObject;
   }
 
   async createUserProfile(userId, userData) {
@@ -37,7 +50,12 @@ class UserService {
     if (!user) {
       throw new Error('User not found');
     }
-    return user.toObject();
+    
+    const userObject = user.toObject();
+    const cacheKey = `user:${id}`;
+    await cacheService.set(cacheKey, userObject, 3600);
+    
+    return userObject;
   }
 
   async deleteUserProfile(id) {
@@ -45,6 +63,10 @@ class UserService {
     if (!deleted) {
       throw new Error('User not found');
     }
+    
+    const cacheKey = `user:${id}`;
+    await cacheService.delete(cacheKey);
+    
     return { message: 'User deleted successfully' };
   }
 }

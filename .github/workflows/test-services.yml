@@ -1,0 +1,279 @@
+name: Test Microservices Build and Health
+
+on:
+  push:
+    branches: [ main, master, develop ]
+  pull_request:
+    branches: [ main, master, develop ]
+  workflow_dispatch:
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Create .env files for services
+        run: |
+          # Create env files for each service if they don't exist
+          mkdir -p auth-service user-service order-service payment-service notification-service api-gateway
+          
+          # Auth Service
+          cat > auth-service/env << EOF
+          DB_HOST=postgres
+          DB_PORT=5432
+          DB_NAME=microservices_db
+          DB_USER=postgres
+          DB_PASSWORD=password
+          JWT_SECRET=test-jwt-secret-key-for-ci
+          JWT_EXPIRES_IN=24h
+          AUTH_SERVICE_PORT=3001
+          EOF
+          
+          # User Service
+          cat > user-service/env << EOF
+          DB_HOST=postgres
+          DB_PORT=5432
+          DB_NAME=microservices_db
+          DB_USER=postgres
+          DB_PASSWORD=password
+          JWT_SECRET=test-jwt-secret-key-for-ci
+          REDIS_URL=redis://redis:6379
+          USER_SERVICE_PORT=3002
+          EOF
+          
+          # Order Service
+          cat > order-service/env << EOF
+          DB_HOST=postgres
+          DB_PORT=5432
+          DB_NAME=microservices_db
+          DB_USER=postgres
+          DB_PASSWORD=password
+          JWT_SECRET=test-jwt-secret-key-for-ci
+          ORDER_SERVICE_PORT=3003
+          EOF
+          
+          # Payment Service
+          cat > payment-service/env << EOF
+          DB_HOST=postgres
+          DB_PORT=5432
+          DB_NAME=microservices_db
+          DB_USER=postgres
+          DB_PASSWORD=password
+          GATEWAY_URL=http://api-gateway:8080
+          KAFKA_BROKER=kafka:9092
+          PAYMENT_SERVICE_PORT=3004
+          EOF
+          
+          # Notification Service
+          cat > notification-service/env << EOF
+          MONGODB_URL=mongodb://mongodb:27017
+          MONGODB_DB=notifications_db
+          KAFKA_BROKER=kafka:9092
+          NOTIFICATION_SERVICE_PORT=3005
+          EOF
+          
+          # API Gateway
+          cat > api-gateway/env << EOF
+          GATEWAY_PORT=8080
+          AUTH_SERVICE_URL=http://auth-service:3001
+          USER_SERVICE_URL=http://user-service:3002
+          ORDER_SERVICE_URL=http://order-service:3003
+          PAYMENT_SERVICE_URL=http://payment-service:3004
+          NOTIFICATION_SERVICE_URL=http://notification-service:3005
+          EOF
+
+      - name: Build Docker images
+        run: |
+          echo "🔨 Building Docker images..."
+          docker-compose build --no-cache 2>&1 | tee build.log
+        continue-on-error: true
+
+      - name: Start services
+        run: |
+          echo "🚀 Starting services..."
+          docker-compose up -d 2>&1 | tee start.log
+          
+          # Wait for services to be ready
+          echo "⏳ Waiting for services to start..."
+          sleep 30
+
+      - name: Check service health
+        id: health_check
+        run: |
+          echo "🏥 Checking service health..."
+          
+          # Create report file
+          REPORT_FILE="service-report.md"
+          echo "# Service Health Report" > $REPORT_FILE
+          echo "" >> $REPORT_FILE
+          echo "**Build Date:** $(date)" >> $REPORT_FILE
+          echo "" >> $REPORT_FILE
+          
+          # Track overall status
+          OVERALL_STATUS="✅ SUCCESS"
+          
+          # Function to check service
+          check_service() {
+            SERVICE_NAME=$1
+            PORT=$2
+            ENDPOINT=${3:-/health}
+            
+            echo "Checking $SERVICE_NAME on port $PORT..."
+            
+            if curl -f -s -m 10 "http://localhost:$PORT$ENDPOINT" > /dev/null 2>&1; then
+              echo "✅ $SERVICE_NAME is healthy" | tee -a $REPORT_FILE
+              return 0
+            else
+              echo "❌ $SERVICE_NAME is not responding" | tee -a $REPORT_FILE
+              OVERALL_STATUS="❌ FAILED"
+              return 1
+            fi
+          }
+          
+          # Check each service
+          echo "## Service Status" >> $REPORT_FILE
+          echo "" >> $REPORT_FILE
+          
+          check_service "PostgreSQL" 5432 || true
+          check_service "Redis" 6379 || true
+          check_service "MongoDB" 27017 || true
+          check_service "Zookeeper" 2181 || true
+          check_service "Kafka" 9092 || true
+          
+          echo "" >> $REPORT_FILE
+          echo "## Microservices" >> $REPORT_FILE
+          echo "" >> $REPORT_FILE
+          
+          check_service "Auth Service" 3001 /api/register || true
+          check_service "User Service" 3002 /health || true
+          check_service "Order Service" 3003 /health || true
+          check_service "Payment Service" 3004 /health || true
+          check_service "Notification Service" 3005 /health || true
+          check_service "API Gateway" 8080 /health || true
+          
+          echo "" >> $REPORT_FILE
+          echo "## Overall Status" >> $REPORT_FILE
+          echo "" >> $REPORT_FILE
+          echo "$OVERALL_STATUS" >> $REPORT_FILE
+          
+          # Set output
+          echo "status=$OVERALL_STATUS" >> $GITHUB_OUTPUT
+          
+          # Show report
+          cat $REPORT_FILE
+
+      - name: Get service logs
+        if: failure()
+        run: |
+          echo "📋 Collecting service logs..."
+          mkdir -p logs
+          
+          docker-compose ps > logs/services-status.txt
+          docker-compose logs postgres > logs/postgres.log 2>&1 || true
+          docker-compose logs redis > logs/redis.log 2>&1 || true
+          docker-compose logs mongodb > logs/mongodb.log 2>&1 || true
+          docker-compose logs zookeeper > logs/zookeeper.log 2>&1 || true
+          docker-compose logs kafka > logs/kafka.log 2>&1 || true
+          docker-compose logs auth-service > logs/auth-service.log 2>&1 || true
+          docker-compose logs user-service > logs/user-service.log 2>&1 || true
+          docker-compose logs order-service > logs/order-service.log 2>&1 || true
+          docker-compose logs payment-service > logs/payment-service.log 2>&1 || true
+          docker-compose logs notification-service > logs/notification-service.log 2>&1 || true
+          docker-compose logs api-gateway > logs/api-gateway.log 2>&1 || true
+
+      - name: Create error report
+        if: failure()
+        run: |
+          echo "📝 Creating error report..."
+          
+          ERROR_REPORT="error-report.md"
+          echo "# Error Report" > $ERROR_REPORT
+          echo "" >> $ERROR_REPORT
+          echo "**Build Date:** $(date)" >> $ERROR_REPORT
+          echo "" >> $ERROR_REPORT
+          
+          # Check each service for errors
+          echo "## Failed Services" >> $ERROR_REPORT
+          echo "" >> $ERROR_REPORT
+          
+          for service in postgres redis mongodb zookeeper kafka auth-service user-service order-service payment-service notification-service api-gateway; do
+            if [ -f "logs/${service}.log" ]; then
+              ERROR_COUNT=$(grep -i "error\|failed\|exception" logs/${service}.log | wc -l || echo "0")
+              if [ "$ERROR_COUNT" -gt 0 ]; then
+                echo "### $service" >> $ERROR_REPORT
+                echo "" >> $ERROR_REPORT
+                echo "**Error Count:** $ERROR_COUNT" >> $ERROR_REPORT
+                echo "" >> $ERROR_REPORT
+                echo "**Last 20 error lines:**" >> $ERROR_REPORT
+                echo '```' >> $ERROR_REPORT
+                grep -i "error\|failed\|exception" logs/${service}.log | tail -20 >> $ERROR_REPORT || true
+                echo '```' >> $ERROR_REPORT
+                echo "" >> $ERROR_REPORT
+              fi
+            fi
+          done
+          
+          # Show service status
+          echo "## Service Status" >> $ERROR_REPORT
+          echo "" >> $ERROR_REPORT
+          echo '```' >> $ERROR_REPORT
+          docker-compose ps >> $ERROR_REPORT || true
+          echo '```' >> $ERROR_REPORT
+          
+          cat $ERROR_REPORT
+
+      - name: Upload service logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: service-logs
+          path: |
+            logs/
+            build.log
+            start.log
+            service-report.md
+            error-report.md
+          retention-days: 7
+
+      - name: Comment PR with report
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            let report = '## 🔍 Service Health Check Report\n\n';
+            
+            if (fs.existsSync('service-report.md')) {
+              report += fs.readFileSync('service-report.md', 'utf8');
+            }
+            
+            if (fs.existsSync('error-report.md')) {
+              report += '\n\n' + fs.readFileSync('error-report.md', 'utf8');
+            }
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: report
+            });
+
+      - name: Fail if services are down
+        run: |
+          if [ "${{ steps.health_check.outputs.status }}" == "❌ FAILED" ]; then
+            echo "❌ Some services failed health checks. Check the logs for details."
+            exit 1
+          fi
+          echo "✅ All services are healthy!"
+
+      - name: Cleanup
+        if: always()
+        run: |
+          echo "🧹 Cleaning up..."
+          docker-compose down -v || true

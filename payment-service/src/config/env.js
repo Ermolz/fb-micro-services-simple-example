@@ -12,4 +12,7 @@ module.exports = {
   gateway: {
     url: process.env.GATEWAY_URL,
   },
+  kafka: {
+    broker: process.env.KAFKA_BROKER || 'kafka:9092',
+  },
 };

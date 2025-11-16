@@ -1,0 +1,49 @@
+name: Quick Build Check
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  build-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    
+    strategy:
+      matrix:
+        service:
+          - auth-service
+          - user-service
+          - order-service
+          - payment-service
+          - notification-service
+          - api-gateway
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build ${{ matrix.service }}
+        run: |
+          echo "🔨 Building ${{ matrix.service }}..."
+          docker-compose build ${{ matrix.service }} 2>&1 | tee build-${{ matrix.service }}.log
+          
+          if [ ${PIPESTATUS[0]} -ne 0 ]; then
+            echo "❌ Build failed for ${{ matrix.service }}"
+            exit 1
+          fi
+          
+          echo "✅ Build successful for ${{ matrix.service }}"
+
+      - name: Upload build logs
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-log-${{ matrix.service }}
+          path: build-${{ matrix.service }}.log
+          retention-days: 3

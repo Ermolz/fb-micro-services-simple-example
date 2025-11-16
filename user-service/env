@@ -8,5 +8,8 @@ DB_PASSWORD=password
 # JWT Configuration
 JWT_SECRET=your-super-secret-jwt-key-here
 
+# Redis Configuration
+REDIS_URL=redis://redis:6379
+
 # Service Configuration
 USER_SERVICE_PORT=3002
