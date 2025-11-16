@@ -1,5 +1,8 @@
 # Microservices Project
 
+[![Quick Build Check](https://github.com/Ermolz/fb-micro-services-simple-example/actions/workflows/build-check.yml/badge.svg)](https://github.com/Ermolz/fb-micro-services-simple-example/actions/workflows/build-check.yml)
+[![Test Microservices Build and Health](https://github.com/Ermolz/fb-micro-services-simple-example/actions/workflows/test-services.yml/badge.svg)](https://github.com/Ermolz/fb-micro-services-simple-example/actions/workflows/test-services.yml)
+
 Node.js microservices project using Express, PostgreSQL, MongoDB, Kafka, Redis and Docker.
 
 ## Architecture
@@ -129,6 +132,32 @@ curl http://localhost:3002/health
 ```
 
 For more details, see [.github/workflows/README.md](.github/workflows/README.md)
+
+## Documentation
+
+Each service has detailed API documentation with examples, request/response formats, and error codes:
+
+### Service Documentation
+
+- **[API Gateway API Documentation](api-gateway/API.md)** - Complete API Gateway routes, service routing, and examples
+- **[Auth Service API Documentation](auth-service/API.md)** - User registration, authentication, and JWT tokens
+- **[User Service API Documentation](user-service/API.md)** - User profile management, CRUD operations, and Redis caching
+- **[Order Service API Documentation](order-service/API.md)** - Order management, creation, and retrieval
+- **[Payment Service API Documentation](payment-service/API.md)** - Payment processing, Kafka events, and Gateway integration
+- **[Notification Service API Documentation](notification-service/API.md)** - Notifications management, Kafka consumer, and MongoDB
+
+### Additional Documentation
+
+- **[GitHub Actions Workflows](.github/workflows/README.md)** - CI/CD pipeline documentation and testing guides
+- **[Research Document](docs/Мікросервісна%20архітектура%20на%20Node.js_%20ґрунтовне%20дослідження.md)** - Comprehensive research on microservices architecture (in Ukrainian)
+- **[Local Testing Script](scripts/test-build.sh)** - Script for local build and health check testing
+
+### Quick Links
+
+- **API Gateway Base URL:** http://localhost:8080
+- **All API requests should go through Gateway** for proper routing and authentication
+- **Direct service access:** Available on ports 3001-3005 for development/testing
+- **Postman Collection:** Import [postman.json](docs/postman/postman.json) for complete API testing workflows
 
 ## Architecture Diagram
 
