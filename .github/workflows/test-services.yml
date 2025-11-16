@@ -199,7 +199,7 @@ jobs:
           echo "## Infrastructure Services" >> $REPORT_FILE
           echo "" >> $REPORT_FILE
           
-          check_container "PostgreSQL" "postgres" || true
+          check_container "PostgreSQL" "microservices-postgres" || true
           check_container "Redis" "redis" || true
           check_container "MongoDB" "mongodb" || true
           check_container "Zookeeper" "zookeeper" || true
