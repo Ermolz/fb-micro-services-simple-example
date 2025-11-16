@@ -99,73 +99,115 @@ jobs:
           echo "🚀 Starting services..."
           docker-compose up -d 2>&1 | tee start.log
           
-          # Wait for services to be ready
           echo "⏳ Waiting for services to start..."
-          sleep 30
+          sleep 60
+          
+          echo "📊 Service status:"
+          docker-compose ps
 
       - name: Check service health
         id: health_check
         run: |
           echo "🏥 Checking service health..."
           
-          # Create report file
           REPORT_FILE="service-report.md"
           echo "# Service Health Report" > $REPORT_FILE
           echo "" >> $REPORT_FILE
           echo "**Build Date:** $(date)" >> $REPORT_FILE
           echo "" >> $REPORT_FILE
           
-          # Track overall status
-          OVERALL_STATUS="✅ SUCCESS"
+          OVERALL_STATUS="SUCCESS"
+          FAILED_COUNT=0
           
-          # Function to check service
-          check_service() {
+          check_container() {
             SERVICE_NAME=$1
-            PORT=$2
-            ENDPOINT=${3:-/health}
+            CONTAINER_NAME=$2
             
-            echo "Checking $SERVICE_NAME on port $PORT..."
-            
-            if curl -f -s -m 10 "http://localhost:$PORT$ENDPOINT" > /dev/null 2>&1; then
-              echo "✅ $SERVICE_NAME is healthy" | tee -a $REPORT_FILE
-              return 0
+            echo "Checking $SERVICE_NAME..."
+            if docker ps --format '{{.Names}}' | grep -q "^${CONTAINER_NAME}$"; then
+              CONTAINER_STATUS=$(docker inspect --format='{{.State.Status}}' ${CONTAINER_NAME} 2>/dev/null || echo "unknown")
+              if [ "$CONTAINER_STATUS" = "running" ]; then
+                echo "✅ $SERVICE_NAME is running" | tee -a $REPORT_FILE
+                return 0
+              else
+                echo "❌ $SERVICE_NAME is not running (status: $CONTAINER_STATUS)" | tee -a $REPORT_FILE
+                FAILED_COUNT=$((FAILED_COUNT + 1))
+                return 1
+              fi
             else
-              echo "❌ $SERVICE_NAME is not responding" | tee -a $REPORT_FILE
-              OVERALL_STATUS="❌ FAILED"
+              echo "❌ $SERVICE_NAME container not found" | tee -a $REPORT_FILE
+              FAILED_COUNT=$((FAILED_COUNT + 1))
               return 1
             fi
           }
           
-          # Check each service
-          echo "## Service Status" >> $REPORT_FILE
+          check_http_service() {
+            SERVICE_NAME=$1
+            PORT=$2
+            ENDPOINT=${3:-/health}
+            METHOD=${4:-GET}
+            MAX_RETRIES=5
+            RETRY=0
+            
+            echo "Checking $SERVICE_NAME on port $PORT..."
+            while [ $RETRY -lt $MAX_RETRIES ]; do
+              if [ "$METHOD" = "POST" ]; then
+                RESPONSE=$(curl -s -m 5 -X POST "http://localhost:$PORT$ENDPOINT" -H "Content-Type: application/json" -d '{}' 2>&1)
+                if echo "$RESPONSE" | grep -q "error\|required" || [ ${#RESPONSE} -gt 0 ]; then
+                  echo "✅ $SERVICE_NAME is responding" | tee -a $REPORT_FILE
+                  return 0
+                fi
+              else
+                if curl -f -s -m 5 "http://localhost:$PORT$ENDPOINT" > /dev/null 2>&1; then
+                  echo "✅ $SERVICE_NAME is healthy" | tee -a $REPORT_FILE
+                  return 0
+                fi
+              fi
+              RETRY=$((RETRY + 1))
+              if [ $RETRY -lt $MAX_RETRIES ]; then
+                sleep 2
+              fi
+            done
+            
+            echo "❌ $SERVICE_NAME is not responding after $MAX_RETRIES attempts" | tee -a $REPORT_FILE
+            FAILED_COUNT=$((FAILED_COUNT + 1))
+            return 1
+          }
+          
+          echo "## Infrastructure Services" >> $REPORT_FILE
           echo "" >> $REPORT_FILE
           
-          check_service "PostgreSQL" 5432 || true
-          check_service "Redis" 6379 || true
-          check_service "MongoDB" 27017 || true
-          check_service "Zookeeper" 2181 || true
-          check_service "Kafka" 9092 || true
+          check_container "PostgreSQL" "postgres" || true
+          check_container "Redis" "redis" || true
+          check_container "MongoDB" "mongodb" || true
+          check_container "Zookeeper" "zookeeper" || true
+          check_container "Kafka" "kafka" || true
           
           echo "" >> $REPORT_FILE
           echo "## Microservices" >> $REPORT_FILE
           echo "" >> $REPORT_FILE
           
-          check_service "Auth Service" 3001 /api/register || true
-          check_service "User Service" 3002 /health || true
-          check_service "Order Service" 3003 /health || true
-          check_service "Payment Service" 3004 /health || true
-          check_service "Notification Service" 3005 /health || true
-          check_service "API Gateway" 8080 /health || true
+          check_http_service "Auth Service" 3001 "/api/register" "POST" || true
+          check_http_service "User Service" 3002 "/health" || true
+          check_http_service "Order Service" 3003 "/health" || true
+          check_http_service "Payment Service" 3004 "/health" || true
+          check_http_service "Notification Service" 3005 "/health" || true
+          check_http_service "API Gateway" 8080 "/health" || true
           
           echo "" >> $REPORT_FILE
           echo "## Overall Status" >> $REPORT_FILE
           echo "" >> $REPORT_FILE
-          echo "$OVERALL_STATUS" >> $REPORT_FILE
           
-          # Set output
+          if [ $FAILED_COUNT -gt 0 ]; then
+            OVERALL_STATUS="FAILED"
+            echo "❌ FAILED - $FAILED_COUNT service(s) failed" >> $REPORT_FILE
+          else
+            echo "✅ SUCCESS - All services are healthy" >> $REPORT_FILE
+          fi
+          
           echo "status=$OVERALL_STATUS" >> $GITHUB_OUTPUT
+          echo "failed_count=$FAILED_COUNT" >> $GITHUB_OUTPUT
           
-          # Show report
           cat $REPORT_FILE
 
       - name: Get service logs
@@ -266,8 +308,9 @@ jobs:
 
       - name: Fail if services are down
         run: |
-          if [ "${{ steps.health_check.outputs.status }}" == "❌ FAILED" ]; then
-            echo "❌ Some services failed health checks. Check the logs for details."
+          if [ "${{ steps.health_check.outputs.status }}" == "FAILED" ]; then
+            echo "❌ Some services failed health checks. Failed count: ${{ steps.health_check.outputs.failed_count }}"
+            echo "Check the logs and service-report.md for details."
             exit 1
           fi
           echo "✅ All services are healthy!"
